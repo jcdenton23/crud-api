@@ -8,12 +8,11 @@ import {
 } from '../controllers/userController';
 import { parseBody, sendResponse } from '../utils';
 
-
 export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
   const { method, url } = req;
 
   if (!url) {
-    sendResponse(res, 400, { message:  'Not found' });
+    sendResponse(res, 400, { message: 'Not found' });
     return;
   }
 
@@ -50,7 +49,7 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
           sendResponse(res, 400, { message: 'Invalid JSON' });
         }
       } else {
-        sendResponse(res, 400, { message:  'Not found'});
+        sendResponse(res, 400, { message: 'Not found' });
       }
       break;
 
@@ -58,7 +57,7 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
       if (url.startsWith('/api/users/') && userId) {
         return handleDeleteUser(req, res, userId);
       } else {
-        sendResponse(res, 400, { message:  'Not found' });
+        sendResponse(res, 400, { message: 'Not found' });
       }
       break;
 
