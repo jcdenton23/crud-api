@@ -7,7 +7,7 @@ dotenv.config();
 const PORT = process.env.PORT || 4000;
 
 const server = createServer((req, res) => {
-    userRoutes(req, res);
+  userRoutes(req, res);
 });
 
 server.listen(PORT, () => {

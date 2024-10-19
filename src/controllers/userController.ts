@@ -1,7 +1,12 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { getUsers, getUserById, createUser, updateUser, deleteUser } from '../db';
+import {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+} from '../db';
 import { validateUUID } from '../utils';
-
 
 const MESSAGES = {
   INVALID_USER_ID: 'Invalid user ID',
@@ -10,15 +15,18 @@ const MESSAGES = {
   USER_CREATED: 'User created successfully',
 };
 
-
 export const handleGetUsers = (req: IncomingMessage, res: ServerResponse) => {
   const users = getUsers();
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(users));
 };
 
-export const handleGetUserById = (req: IncomingMessage, res: ServerResponse, userId: string) => {
-  console.log(userId)
+export const handleGetUserById = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  userId: string
+) => {
+  console.log(userId);
   if (!validateUUID(userId)) {
     res.writeHead(400, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ message: MESSAGES.INVALID_USER_ID }));
@@ -34,7 +42,11 @@ export const handleGetUserById = (req: IncomingMessage, res: ServerResponse, use
   }
 };
 
-export const handleCreateUser = (req: IncomingMessage, res: ServerResponse, body: any) => {
+export const handleCreateUser = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  body: any
+) => {
   const { username, age, hobbies } = body;
 
   if (!username || typeof age !== 'number' || !Array.isArray(hobbies)) {
@@ -47,7 +59,12 @@ export const handleCreateUser = (req: IncomingMessage, res: ServerResponse, body
   res.end(JSON.stringify({ message: MESSAGES.USER_CREATED, user: newUser }));
 };
 
-export const handleUpdateUser = (req: IncomingMessage, res: ServerResponse, userId: string, body: any) => {
+export const handleUpdateUser = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  userId: string,
+  body: any
+) => {
   if (!validateUUID(userId)) {
     res.writeHead(400, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ message: MESSAGES.INVALID_USER_ID }));
@@ -65,7 +82,11 @@ export const handleUpdateUser = (req: IncomingMessage, res: ServerResponse, user
   }
 };
 
-export const handleDeleteUser = (req: IncomingMessage, res: ServerResponse, userId: string) => {
+export const handleDeleteUser = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  userId: string
+) => {
   if (!validateUUID(userId)) {
     res.writeHead(400, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ message: MESSAGES.INVALID_USER_ID }));

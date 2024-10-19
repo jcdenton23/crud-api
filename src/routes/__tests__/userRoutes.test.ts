@@ -1,6 +1,12 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { userRoutes } from '../userRoutes';
-import { getUsers, getUserById, createUser, updateUser, deleteUser } from '../../db';
+import {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+} from '../../db';
 import { parseBody, validateUUID } from '../../utils';
 
 jest.mock('../../db');
@@ -39,7 +45,9 @@ describe('User Routes', () => {
 
     await userRoutes(req as IncomingMessage, res as ServerResponse);
 
-    expect(writeHeadMock).toHaveBeenCalledWith(200, { 'Content-Type': 'application/json' });
+    expect(writeHeadMock).toHaveBeenCalledWith(200, {
+      'Content-Type': 'application/json',
+    });
     expect(endMock).toHaveBeenCalledWith(JSON.stringify(users));
   });
 
@@ -54,7 +62,9 @@ describe('User Routes', () => {
 
     await userRoutes(req as IncomingMessage, res as ServerResponse);
 
-    expect(writeHeadMock).toHaveBeenCalledWith(200, { 'Content-Type': 'application/json' });
+    expect(writeHeadMock).toHaveBeenCalledWith(200, {
+      'Content-Type': 'application/json',
+    });
     expect(endMock).toHaveBeenCalledWith(JSON.stringify(user));
   });
 
@@ -66,8 +76,12 @@ describe('User Routes', () => {
 
     await userRoutes(req as IncomingMessage, res as ServerResponse);
 
-    expect(writeHeadMock).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
-    expect(endMock).toHaveBeenCalledWith(JSON.stringify({ message: 'Invalid user ID' }));
+    expect(writeHeadMock).toHaveBeenCalledWith(400, {
+      'Content-Type': 'application/json',
+    });
+    expect(endMock).toHaveBeenCalledWith(
+      JSON.stringify({ message: 'Invalid user ID' })
+    );
   });
 
   test('should create a new user for POST /api/users', async () => {
@@ -79,9 +93,14 @@ describe('User Routes', () => {
 
     await userRoutes(req as IncomingMessage, res as ServerResponse);
 
-    expect(writeHeadMock).toHaveBeenCalledWith(201, { 'Content-Type': 'application/json' });
+    expect(writeHeadMock).toHaveBeenCalledWith(201, {
+      'Content-Type': 'application/json',
+    });
     expect(endMock).toHaveBeenCalledWith(
-      JSON.stringify({ message: 'User created successfully', user: { id: '1', ...body } })
+      JSON.stringify({
+        message: 'User created successfully',
+        user: { id: '1', ...body },
+      })
     );
   });
 
@@ -93,8 +112,12 @@ describe('User Routes', () => {
 
     await userRoutes(req as IncomingMessage, res as ServerResponse);
 
-    expect(writeHeadMock).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
-    expect(endMock).toHaveBeenCalledWith(JSON.stringify({ message: 'Invalid input' }));
+    expect(writeHeadMock).toHaveBeenCalledWith(400, {
+      'Content-Type': 'application/json',
+    });
+    expect(endMock).toHaveBeenCalledWith(
+      JSON.stringify({ message: 'Invalid input' })
+    );
   });
 
   test('should update a user for PUT /api/users/:id', async () => {
@@ -107,7 +130,9 @@ describe('User Routes', () => {
 
     await userRoutes(req as IncomingMessage, res as ServerResponse);
 
-    expect(writeHeadMock).toHaveBeenCalledWith(200, { 'Content-Type': 'application/json' });
+    expect(writeHeadMock).toHaveBeenCalledWith(200, {
+      'Content-Type': 'application/json',
+    });
     expect(endMock).toHaveBeenCalledWith(JSON.stringify({ id: '1', ...body }));
   });
 
@@ -128,7 +153,11 @@ describe('User Routes', () => {
 
     await userRoutes(req as IncomingMessage, res as ServerResponse);
 
-    expect(writeHeadMock).toHaveBeenCalledWith(404, { 'Content-Type': 'application/json' });
-    expect(endMock).toHaveBeenCalledWith(JSON.stringify({ message: 'User not found' }));
+    expect(writeHeadMock).toHaveBeenCalledWith(404, {
+      'Content-Type': 'application/json',
+    });
+    expect(endMock).toHaveBeenCalledWith(
+      JSON.stringify({ message: 'User not found' })
+    );
   });
 });

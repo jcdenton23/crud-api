@@ -17,7 +17,11 @@ export const parseBody = (req: IncomingMessage): Promise<any> => {
   });
 };
 
-export const sendResponse = (res: ServerResponse, statusCode: number, message: any) => {
+export const sendResponse = (
+  res: ServerResponse,
+  statusCode: number,
+  message: any
+) => {
   res.writeHead(statusCode, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(message));
 };
