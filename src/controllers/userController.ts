@@ -26,7 +26,6 @@ export const handleGetUserById = (
   res: ServerResponse,
   userId: string
 ) => {
-  console.log(userId);
   if (!validateUUID(userId)) {
     res.writeHead(400, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ message: MESSAGES.INVALID_USER_ID }));
