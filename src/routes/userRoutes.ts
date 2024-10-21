@@ -32,28 +32,32 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
 
   switch (method) {
     case 'GET':
-      if (url === '/api/users') {
-        if (isWorker) {
-          const users = (await requestUsersFromMaster(req, res)) as User[];
-          return handleGetUsers(req, res, users);
+      try {
+        if (url === '/api/users') {
+          if (isWorker) {
+            const users = (await requestUsersFromMaster(req, res)) as User[];
+            return handleGetUsers(req, res, users);
+          } else {
+            return handleGetUsers(req, res, getUsers());
+          }
+        } else if (url.startsWith('/api/users/') && userId) {
+          if (isWorker) {
+            const users = (await requestUsersFromMaster(req, res)) as User[];
+            return handleGetUserById(req, res, users, userId);
+          } else {
+            return handleGetUserById(req, res, getUsers(), userId);
+          }
         } else {
-          return handleGetUsers(req, res, getUsers());
+          sendResponse(res, 404, { message: 'Not found' });
         }
-      } else if (url.startsWith('/api/users/') && userId) {
-        if (isWorker) {
-          const users = (await requestUsersFromMaster(req, res)) as User[];
-          return handleGetUserById(req, res, users, userId);
-        } else {
-          return handleGetUserById(req, res, getUsers(), userId);
-        }
-      } else {
-        sendResponse(res, 404, { message: 'Not found' });
+      } catch (err) {
+        sendResponse(res, 500, { message: 'Server Error' });
       }
       break;
 
     case 'POST':
-      if (url === '/api/users') {
-        try {
+      try {
+        if (url === '/api/users') {
           const body = await parseBody(req);
           const newUser = await handleCreateUser(req, res, body);
 
@@ -62,17 +66,17 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
           }
 
           return newUser;
-        } catch (err) {
-          sendResponse(res, 400, { message: 'Invalid JSON' });
+        } else {
+          sendResponse(res, 404, { message: 'Not found' });
         }
-      } else {
-        sendResponse(res, 404, { message: 'Not found' });
+      } catch (err) {
+        sendResponse(res, 500, { message: 'Server Error' });
       }
       break;
 
     case 'PUT':
-      if (url.startsWith('/api/users/') && userId) {
-        try {
+      try {
+        if (url.startsWith('/api/users/') && userId) {
           const body = await parseBody(req);
           if (isWorker) {
             const users = (await requestUsersFromMaster(req, res)) as User[];
@@ -82,26 +86,30 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
           } else {
             return handleUpdateUser(req, res, getUsers(), userId, body);
           }
-        } catch (err) {
-          sendResponse(res, 400, { message: 'Invalid JSON' });
+        } else {
+          sendResponse(res, 404, { message: 'Not found' });
         }
-      } else {
-        sendResponse(res, 404, { message: 'Not found' });
+      } catch (err) {
+        sendResponse(res, 500, { message: 'Server Error' });
       }
       break;
 
     case 'DELETE':
-      if (url.startsWith('/api/users/') && userId) {
-        if (isWorker) {
-          const users = (await requestUsersFromMaster(req, res)) as User[];
-          const removedUser = handleDeleteUser(req, res, users, userId);
-          removeUsersInMaster(users);
-          return removedUser;
+      try {
+        if (url.startsWith('/api/users/') && userId) {
+          if (isWorker) {
+            const users = (await requestUsersFromMaster(req, res)) as User[];
+            const removedUser = handleDeleteUser(req, res, users, userId);
+            removeUsersInMaster(users);
+            return removedUser;
+          } else {
+            return handleDeleteUser(req, res, getUsers(), userId);
+          }
         } else {
-          return handleDeleteUser(req, res, getUsers(), userId);
+          sendResponse(res, 404, { message: 'Not found' });
         }
-      } else {
-        sendResponse(res, 404, { message: 'Not found' });
+      } catch (err) {
+        sendResponse(res, 500, { message: 'Server Error' });
       }
       break;
 
