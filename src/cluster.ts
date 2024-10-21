@@ -5,13 +5,14 @@ import { userRoutes } from './routes/userRoutes';
 
 const DEFAULT_PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000;
 const totalCPUs = cpus().length;
+const WORKER_COUNT = totalCPUs - 1;
 
 const createLoadBalancerServer = (port: number) => {
   let currentWorkerIndex = 0;
 
-  return http.createServer((req, res) => {
-    const assignedWorkerPort =
-      port + (currentWorkerIndex % (totalCPUs - 1)) + 1;
+  const loadBalancerServer = http.createServer((req, res) => {
+    const assignedWorkerPort = port + (currentWorkerIndex % WORKER_COUNT) + 1;
+
     const proxyOptions = {
       hostname: 'localhost',
       port: assignedWorkerPort,
@@ -25,23 +26,29 @@ const createLoadBalancerServer = (port: number) => {
       workerRes.pipe(res, { end: true });
     });
 
+    proxyRequest.on('error', (err) => {
+      console.error(`Proxy request error: ${err.message}`);
+      res.writeHead(502);
+      res.end('Bad Gateway');
+    });
+
     req.pipe(proxyRequest, { end: true });
     currentWorkerIndex++;
   });
+
+  return loadBalancerServer;
 };
 
 const startWorkerServer = (port: number) => {
   const server = http.createServer(userRoutes);
 
   server.listen(port, () => {
-    console.log(`Worker ${process.pid} is listening on port ${port}`);
+    console.log(`Worker process ${process.pid} is listening on port ${port}`);
   });
 };
 
 if (cluster.isPrimary) {
-  console.log(`Primary process is running (PID: ${process.pid})`);
-
-  for (let i = 0; i < totalCPUs - 1; i++) {
+  for (let i = 0; i < WORKER_COUNT; i++) {
     const workerPort = DEFAULT_PORT + i + 1;
     cluster.fork({ WORKER_PORT: workerPort });
   }
@@ -52,7 +59,9 @@ if (cluster.isPrimary) {
   });
 
   cluster.on('exit', (worker) => {
-    console.log(`Worker ${worker.process.pid} died. Restarting...`);
+    console.log(
+      `Worker process ${worker.process.pid} has exited. Restarting...`
+    );
     cluster.fork();
   });
 } else {
@@ -62,7 +71,7 @@ if (cluster.isPrimary) {
     const numericWorkerPort = parseInt(workerPortEnv, 10);
     startWorkerServer(numericWorkerPort);
   } else {
-    console.error('Error: WORKER_PORT is not defined');
+    console.error('WORKER_PORT environment variable is not set');
     process.exit(1);
   }
 }
