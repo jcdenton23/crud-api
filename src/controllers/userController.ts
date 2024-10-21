@@ -8,6 +8,8 @@ const MESSAGES = {
   USER_NOT_FOUND: 'User not found',
   INVALID_INPUT: 'Invalid input',
   USER_CREATED: 'User created successfully',
+  REQUIRED_INPUT:
+    'Invalid input: username (string), age (number), and hobbies (array of strings) are required.',
 };
 
 export const handleGetUsers = (
@@ -56,7 +58,7 @@ export const handleCreateUser = (
     !hobbies.every((hobby) => typeof hobby === 'string')
   ) {
     res.writeHead(400, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ message: MESSAGES.INVALID_INPUT }));
+    return res.end(JSON.stringify({ message: MESSAGES.REQUIRED_INPUT }));
   }
 
   const newUser = createUser(username, age, hobbies);
@@ -77,7 +79,17 @@ export const handleUpdateUser = (
   }
 
   const { username, age, hobbies } = body;
-
+  if (
+    !username ||
+    typeof username !== 'string' ||
+    typeof age !== 'number' ||
+    isNaN(age) ||
+    !Array.isArray(hobbies) ||
+    !hobbies.every((hobby) => typeof hobby === 'string')
+  ) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ message: MESSAGES.REQUIRED_INPUT }));
+  }
   const updatedUser = updateUser(users, userId, username, age, hobbies);
   if (updatedUser) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
