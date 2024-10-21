@@ -2,10 +2,13 @@ import cluster from 'cluster';
 import { cpus } from 'os';
 import http from 'http';
 import { userRoutes } from './routes/userRoutes';
+import { User } from './models/userModel';
 
 const DEFAULT_PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000;
 const totalCPUs = cpus().length;
 const WORKER_COUNT = totalCPUs - 1;
+
+let users: User[] = [];
 
 const createLoadBalancerServer = (port: number) => {
   let currentWorkerIndex = 0;
@@ -50,7 +53,19 @@ const startWorkerServer = (port: number) => {
 if (cluster.isPrimary) {
   for (let i = 0; i < WORKER_COUNT; i++) {
     const workerPort = DEFAULT_PORT + i + 1;
-    cluster.fork({ WORKER_PORT: workerPort });
+    const worker = cluster.fork({ WORKER_PORT: workerPort });
+
+    worker.on('message', (msg) => {
+      if (msg.type === 'updateUsers') {
+        users = [...users, ...msg.data];
+      } else if (msg.type === 'removeUsers') {
+        users = [...msg.data];
+      } else if (msg.type === 'putUsers') {
+        users = [...msg.data];
+      } else if (msg.type === 'requestUsers') {
+        worker.send({ type: 'provideUsers', data: users });
+      }
+    });
   }
 
   const loadBalancerServer = createLoadBalancerServer(DEFAULT_PORT);

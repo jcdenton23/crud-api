@@ -6,7 +6,19 @@ import {
   handleUpdateUser,
   handleDeleteUser,
 } from '../controllers/userController';
-import { parseBody, sendResponse } from '../utils';
+import {
+  parseBody,
+  putUsersInMaster,
+  removeUsersInMaster,
+  requestUsersFromMaster,
+  sendResponse,
+  updateUsersInMaster,
+} from '../utils';
+import cluster from 'cluster';
+import { getUsers } from '../db';
+import { User } from '../models/userModel';
+
+const isWorker = cluster.isWorker && process.send;
 
 export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
   const { method, url } = req;
@@ -21,9 +33,19 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
   switch (method) {
     case 'GET':
       if (url === '/api/users') {
-        return handleGetUsers(req, res);
+        if (isWorker) {
+          const users = (await requestUsersFromMaster(req, res)) as User[];
+          return handleGetUsers(req, res, users);
+        } else {
+          return handleGetUsers(req, res, getUsers());
+        }
       } else if (url.startsWith('/api/users/') && userId) {
-        return handleGetUserById(req, res, userId);
+        if (isWorker) {
+          const users = (await requestUsersFromMaster(req, res)) as User[];
+          return handleGetUserById(req, res, users, userId);
+        } else {
+          return handleGetUserById(req, res, getUsers(), userId);
+        }
       } else {
         sendResponse(res, 400, { message: 'Not found' });
       }
@@ -33,7 +55,13 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
       if (url === '/api/users') {
         try {
           const body = await parseBody(req);
-          return handleCreateUser(req, res, body);
+          const newUser = await handleCreateUser(req, res, body);
+
+          if (cluster.isWorker) {
+            updateUsersInMaster(getUsers());
+          }
+
+          return newUser;
         } catch (err) {
           sendResponse(res, 400, { message: 'Invalid JSON' });
         }
@@ -44,7 +72,14 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
       if (url.startsWith('/api/users/') && userId) {
         try {
           const body = await parseBody(req);
-          return handleUpdateUser(req, res, userId, body);
+          if (isWorker) {
+            const users = (await requestUsersFromMaster(req, res)) as User[];
+            const updatedUser = handleUpdateUser(req, res, users, userId, body);
+            putUsersInMaster(users);
+            return updatedUser;
+          } else {
+            return handleUpdateUser(req, res, getUsers(), userId, body);
+          }
         } catch (err) {
           sendResponse(res, 400, { message: 'Invalid JSON' });
         }
@@ -55,7 +90,14 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
 
     case 'DELETE':
       if (url.startsWith('/api/users/') && userId) {
-        return handleDeleteUser(req, res, userId);
+        if (isWorker) {
+          const users = (await requestUsersFromMaster(req, res)) as User[];
+          const removedUser = handleDeleteUser(req, res, users, userId);
+          removeUsersInMaster(users);
+          return removedUser;
+        } else {
+          return handleDeleteUser(req, res, getUsers(), userId);
+        }
       } else {
         sendResponse(res, 400, { message: 'Not found' });
       }

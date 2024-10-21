@@ -5,7 +5,7 @@ let users: User[] = [];
 
 export const getUsers = (): User[] => users;
 
-export const getUserById = (id: string): User | undefined =>
+export const getUserById = (users: User[], id: string): User | undefined =>
   users.find((user) => user.id === id);
 
 export const createUser = (
@@ -19,6 +19,7 @@ export const createUser = (
 };
 
 export const updateUser = (
+  users: User[],
   id: string,
   username: string,
   age: number,
@@ -33,7 +34,7 @@ export const updateUser = (
   return undefined;
 };
 
-export const deleteUser = (id: string): boolean => {
+export const deleteUser = (users: User[], id: string): boolean => {
   const userIndex = users.findIndex((user) => user.id === id);
   if (userIndex !== -1) {
     users.splice(userIndex, 1);
