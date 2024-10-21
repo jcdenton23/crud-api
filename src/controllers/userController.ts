@@ -3,7 +3,7 @@ import { getUserById, createUser, updateUser, deleteUser } from '../db';
 import { validateUUID } from '../utils';
 import { User } from '../models/userModel';
 
-const MESSAGES = {
+export const MESSAGES = {
   INVALID_USER_ID: 'Invalid user ID',
   USER_NOT_FOUND: 'User not found',
   INVALID_INPUT: 'Invalid input',

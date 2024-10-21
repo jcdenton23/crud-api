@@ -8,6 +8,7 @@ import {
   deleteUser,
 } from '../../db';
 import { parseBody, validateUUID } from '../../utils';
+import { MESSAGES } from '../../controllers/userController';
 
 jest.mock('../../db');
 jest.mock('../../utils');
@@ -116,7 +117,7 @@ describe('User Routes', () => {
       'Content-Type': 'application/json',
     });
     expect(endMock).toHaveBeenCalledWith(
-      JSON.stringify({ message: 'Invalid input' })
+      JSON.stringify({ message: MESSAGES.REQUIRED_INPUT })
     );
   });
 

@@ -24,7 +24,7 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
   const { method, url } = req;
 
   if (!url) {
-    sendResponse(res, 400, { message: 'Not found' });
+    sendResponse(res, 404, { message: 'Not found' });
     return;
   }
 
@@ -47,7 +47,7 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
           return handleGetUserById(req, res, getUsers(), userId);
         }
       } else {
-        sendResponse(res, 400, { message: 'Not found' });
+        sendResponse(res, 404, { message: 'Not found' });
       }
       break;
 
@@ -65,6 +65,8 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
         } catch (err) {
           sendResponse(res, 400, { message: 'Invalid JSON' });
         }
+      } else {
+        sendResponse(res, 404, { message: 'Not found' });
       }
       break;
 
@@ -84,7 +86,7 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
           sendResponse(res, 400, { message: 'Invalid JSON' });
         }
       } else {
-        sendResponse(res, 400, { message: 'Not found' });
+        sendResponse(res, 404, { message: 'Not found' });
       }
       break;
 
@@ -99,7 +101,7 @@ export const userRoutes = async (req: IncomingMessage, res: ServerResponse) => {
           return handleDeleteUser(req, res, getUsers(), userId);
         }
       } else {
-        sendResponse(res, 400, { message: 'Not found' });
+        sendResponse(res, 404, { message: 'Not found' });
       }
       break;
 
