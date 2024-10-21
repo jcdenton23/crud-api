@@ -47,7 +47,14 @@ export const handleCreateUser = (
 ) => {
   const { username, age, hobbies } = body;
 
-  if (!username || typeof age !== 'number' || !Array.isArray(hobbies)) {
+  if (
+    !username ||
+    typeof username !== 'string' ||
+    typeof age !== 'number' ||
+    isNaN(age) ||
+    !Array.isArray(hobbies) ||
+    !hobbies.every((hobby) => typeof hobby === 'string')
+  ) {
     res.writeHead(400, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ message: MESSAGES.INVALID_INPUT }));
   }
